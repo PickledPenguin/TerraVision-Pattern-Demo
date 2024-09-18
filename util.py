@@ -1,10 +1,9 @@
-
 import turtle
 import math
+import random
 
 # Helper function to check if a point is inside the polygon
 def point_in_polygon(x, y, polygon):
-    # Ray-casting algorithm to test if a point is in a polygon
     n = len(polygon)
     inside = False
     p1x, p1y = polygon[0]
@@ -20,13 +19,12 @@ def point_in_polygon(x, y, polygon):
         p1x, p1y = p2x, p2y
     return inside
 
-# Define the lawn (polygon) and the lawnmower (turtle)
 class Lawn:
     def __init__(self, vertices):
         self.vertices = vertices
         self.turtle = turtle.Turtle()
         self.turtle.color("green")
-        self.turtle.speed(0)  # Fast drawing for the polygon creation
+        self.turtle.speed(0)
         self.turtle.ht()
         self.create_polygon()
 
@@ -37,11 +35,19 @@ class Lawn:
         self.turtle.begin_fill()
         for vertex in self.vertices[1:]:
             self.turtle.goto(vertex)
-        self.turtle.goto(self.vertices[0])  # Close the polygon
+        self.turtle.goto(self.vertices[0])
         self.turtle.end_fill()
 
 class Lawnmower:
-    def __init__(self, start_position, mower_width):
+    PATTERNS = [
+        "horizontal",
+        "vertical"
+    ]
+
+    def __init__(self, start_position, mower_width, pattern="horizontal"):
+        if pattern not in Lawnmower.PATTERNS:
+            raise ValueError(f"Invalid pattern: {pattern}. Available patterns: {Lawnmower.PATTERNS}")
+            
         self.turtle = turtle.Turtle()
         self.turtle.pensize(mower_width)
         self.current_color = "light green"
@@ -53,75 +59,83 @@ class Lawnmower:
         self.turtle.shape("square")
         self.turtle.shapesize(0.75, 0.75)
         self.turtle.speed(100)
-    
+        self.pattern = pattern
+
     def toggle_color(self):
-        if self.current_color == "light green":
-            self.current_color = "dark green"
-        else:
-            self.current_color = "light green"
+        self.current_color = "dark green" if self.current_color == "light green" else "light green"
         self.turtle.color(self.current_color)
 
     def mow(self, lawn_bounds):
-        left_bound = min([point[0] for point in lawn_bounds])
-        right_bound = max([point[0] for point in lawn_bounds])
-        top_bound = max([point[1] for point in lawn_bounds])
-        bottom_bound = min([point[1] for point in lawn_bounds])
-        
-        step_size = self.mower_width  # Mowing step (distance between rows)
-        y = bottom_bound
-        mowing_direction = 1  # 1 for right, -1 for left
+        if self.pattern == "horizontal":
+            self.mow_horizontal(lawn_bounds)
+        elif self.pattern == "vertical":
+            self.mow_vertical(lawn_bounds)
 
+    def mow_horizontal(self, lawn_bounds):
+        left_bound = min(point[0] for point in lawn_bounds)
+        right_bound = max(point[0] for point in lawn_bounds)
+        top_bound = max(point[1] for point in lawn_bounds)
+        bottom_bound = min(point[1] for point in lawn_bounds)
+        
+        step_size = self.mower_width
+        y = bottom_bound
+        
         while y <= top_bound:
-            # Find the valid x-range for the current y
-            x_start, x_end = None, None
-            x = left_bound
-            while x <= right_bound:
+            x_segments = []
+            x_start = None
+            for x in range(left_bound, right_bound + 1):
                 if point_in_polygon(x, y, lawn_bounds):
                     if x_start is None:
                         x_start = x
-                    x_end = x
-                x += 1
-            
-            if x_start is not None and x_end is not None:
+                else:
+                    if x_start is not None:
+                        x_segments.append((x_start, x - 1))
+                        x_start = None
+            if x_start is not None:
+                x_segments.append((x_start, right_bound))
+
+            for x_start, x_end in x_segments:
                 self.turtle.penup()
-                if mowing_direction == 1:
-                    self.turtle.goto(x_start, y)
-                    self.turtle.rt(180)  # Point right
-                else:
-                    self.turtle.goto(x_end, y)
-                    self.turtle.lt(180)  # Point left
+                self.turtle.goto(x_start, y)
+                self.turtle.setheading(0)  # Facing right
                 self.turtle.pendown()
-                
-                # Calculate distance to mow
-                distance_to_mow = abs(x_end - x_start)
-                self.turtle.forward(distance_to_mow)
-                
-                self.toggle_color()  # Change color for the next row
+                self.turtle.forward(x_end - x_start)
 
-            # Move to the next row
+            self.toggle_color()
+
             y += step_size
-            if y <= top_bound:
-                # Determine the starting position for the next row based on direction
-                if mowing_direction == 1:
-                    # Move to the rightmost valid x for the next row
-                    x = right_bound
-                    while x >= left_bound:
-                        if point_in_polygon(x, y, lawn_bounds):
-                            self.turtle.penup()
-                            self.turtle.goto(x, y)
-                            self.turtle.pendown()
-                            break
-                        x -= 1
-                else:
-                    # Move to the leftmost valid x for the next row
-                    x = left_bound
-                    while x <= right_bound:
-                        if point_in_polygon(x, y, lawn_bounds):
-                            self.turtle.penup()
-                            self.turtle.goto(x, y)
-                            self.turtle.pendown()
-                            break
-                        x += 1
 
-                # Flip the mowing direction for the next row
-                mowing_direction *= -1
+
+    def mow_vertical(self, lawn_bounds):
+        left_bound = min(point[0] for point in lawn_bounds)
+        right_bound = max(point[0] for point in lawn_bounds)
+        top_bound = max(point[1] for point in lawn_bounds)
+        bottom_bound = min(point[1] for point in lawn_bounds)
+        
+        step_size = self.mower_width
+        x = left_bound
+        
+        while x <= right_bound:
+            y_segments = []
+            y_start = None
+            for y in range(bottom_bound, top_bound + 1):
+                if point_in_polygon(x, y, lawn_bounds):
+                    if y_start is None:
+                        y_start = y
+                else:
+                    if y_start is not None:
+                        y_segments.append((y_start, y - 1))
+                        y_start = None
+            if y_start is not None:
+                y_segments.append((y_start, top_bound))
+
+            for y_start, y_end in y_segments:
+                self.turtle.penup()
+                self.turtle.goto(x, y_start)
+                self.turtle.setheading(90)
+                self.turtle.pendown()
+                self.turtle.forward(y_end - y_start)
+
+            self.toggle_color()
+
+            x += step_size
