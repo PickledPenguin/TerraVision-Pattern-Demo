@@ -4,7 +4,7 @@ import time
 import random
 from math import atan2
 
-def generate_random_polygon(min_vertices=4, max_vertices=10, x_range=(-200, 200), y_range=(-200, 200)):
+def generate_random_polygon(min_vertices=40, max_vertices=50, x_range=(-200, 200), y_range=(-200, 200)):
     num_vertices = random.randint(min_vertices, max_vertices)
     points = [(random.randint(x_range[0], x_range[1]), random.randint(y_range[0], y_range[1])) for _ in range(num_vertices)]
 
@@ -21,7 +21,7 @@ def generate_random_polygon(min_vertices=4, max_vertices=10, x_range=(-200, 200)
 
 def main():
     # Number of polygons to generate and test
-    num_polygons = 20
+    num_polygons = 5
     
     for i in range(num_polygons):
         turtle.clearscreen()  # Clear the screen for the next polygon
@@ -42,7 +42,7 @@ def main():
         start_x = min([v[0] for v in vertices if v[1] == min_y])
 
         # Create a Lawnmower instance for the current polygon
-        lawnmower = Lawnmower(start_position=(start_x, min_y), mower_width=20, pattern="vertical")
+        lawnmower = Lawnmower(start_position=(start_x, min_y), mower_width=20, pattern="horizontal")
         
         # Simulate mowing the lawn
         lawnmower.mow(vertices)

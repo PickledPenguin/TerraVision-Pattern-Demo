@@ -58,7 +58,7 @@ class Lawnmower:
         self.mower_width = mower_width
         self.turtle.shape("square")
         self.turtle.shapesize(0.75, 0.75)
-        self.turtle.speed(10)
+        self.turtle.speed(100)
         self.pattern = pattern
 
     def toggle_color(self):
@@ -76,11 +76,10 @@ class Lawnmower:
         right_bound = max(point[0] for point in lawn_bounds)
         top_bound = max(point[1] for point in lawn_bounds)
         bottom_bound = min(point[1] for point in lawn_bounds)
-
+        
         step_size = self.mower_width
         y = bottom_bound
-        mowing_direction = 1  # 1 for right, -1 for left
-
+        
         while y <= top_bound:
             x_segments = []
             x_start = None
@@ -95,27 +94,16 @@ class Lawnmower:
             if x_start is not None:
                 x_segments.append((x_start, right_bound))
 
-            # Mow each segment in alternating directions
-            if mowing_direction == 1:
-                for x_start, x_end in x_segments:
-                    self.turtle.penup()
-                    self.turtle.goto(x_start, y)
-                    self.turtle.setheading(0)  # Facing right
-                    self.turtle.pendown()
-                    self.turtle.forward(x_end - x_start)
-            else:
-                for x_start, x_end in reversed(x_segments):
-                    self.turtle.penup()
-                    self.turtle.goto(x_end, y)
-                    self.turtle.setheading(180)  # Facing left
-                    self.turtle.pendown()
-                    self.turtle.forward(x_end - x_start)
+            for x_start, x_end in x_segments:
+                self.turtle.penup()
+                self.turtle.goto(x_start, y)
+                self.turtle.setheading(0)  # Facing right
+                self.turtle.pendown()
+                self.turtle.forward(x_end - x_start)
 
             self.toggle_color()
 
             y += step_size
-            mowing_direction *= -1  # Reverse the direction for the next row
-
 
 
     def mow_vertical(self, lawn_bounds):
@@ -123,11 +111,10 @@ class Lawnmower:
         right_bound = max(point[0] for point in lawn_bounds)
         top_bound = max(point[1] for point in lawn_bounds)
         bottom_bound = min(point[1] for point in lawn_bounds)
-
+        
         step_size = self.mower_width
         x = left_bound
-        mowing_direction = 1  # 1 for up, -1 for down
-
+        
         while x <= right_bound:
             y_segments = []
             y_start = None
@@ -142,24 +129,13 @@ class Lawnmower:
             if y_start is not None:
                 y_segments.append((y_start, top_bound))
 
-            # Mow each segment in alternating directions
-            if mowing_direction == 1:
-                for y_start, y_end in y_segments:
-                    self.turtle.penup()
-                    self.turtle.goto(x, y_start)
-                    self.turtle.setheading(90)  # Facing up
-                    self.turtle.pendown()
-                    self.turtle.forward(y_end - y_start)
-            else:
-                for y_start, y_end in reversed(y_segments):
-                    self.turtle.penup()
-                    self.turtle.goto(x, y_end)
-                    self.turtle.setheading(270)  # Facing down
-                    self.turtle.pendown()
-                    self.turtle.forward(y_end - y_start)
+            for y_start, y_end in y_segments:
+                self.turtle.penup()
+                self.turtle.goto(x, y_start)
+                self.turtle.setheading(90)
+                self.turtle.pendown()
+                self.turtle.forward(y_end - y_start)
 
             self.toggle_color()
 
             x += step_size
-            mowing_direction *= -1  # Reverse the direction for the next column
-
