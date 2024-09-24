@@ -2,6 +2,9 @@ import turtle
 import math
 import random
 
+turtle.register_shape("Lawnmower_l.gif")
+turtle.register_shape("Lawnmower_r.gif")
+
 # Helper function to check if a point is inside the polygon
 def point_in_polygon(x, y, polygon):
     n = len(polygon)
@@ -58,7 +61,7 @@ class Lawnmower:
         self.mower_width = mower_width
         self.turtle.shape("square")
         self.turtle.shapesize(0.75, 0.75)
-        self.turtle.speed(10)
+        self.turtle.speed(5)
         self.pattern = pattern
 
     def toggle_color(self):
@@ -97,6 +100,7 @@ class Lawnmower:
 
             # Mow each segment in alternating directions
             if mowing_direction == 1:
+                self.turtle.shape("Lawnmower_r.gif")  # Set to right-facing image
                 for x_start, x_end in x_segments:
                     self.turtle.penup()
                     self.turtle.goto(x_start, y)
@@ -104,6 +108,7 @@ class Lawnmower:
                     self.turtle.pendown()
                     self.turtle.forward(x_end - x_start)
             else:
+                self.turtle.shape("Lawnmower_l.gif")  # Set to left-facing image
                 for x_start, x_end in reversed(x_segments):
                     self.turtle.penup()
                     self.turtle.goto(x_end, y)
@@ -115,7 +120,6 @@ class Lawnmower:
 
             y += step_size
             mowing_direction *= -1  # Reverse the direction for the next row
-
 
 
     def mow_vertical(self, lawn_bounds):
@@ -135,31 +139,22 @@ class Lawnmower:
                 if point_in_polygon(x, y, lawn_bounds):
                     if y_start is None:
                         y_start = y
-                else:
-                    if y_start is not None:
-                        y_segments.append((y_start, y - 1))
-                        y_start = None
+                    else:
+                        if y_start is not None:
+                            y_segments.append((y_start, y - 1))
+                            y_start = None
             if y_start is not None:
                 y_segments.append((y_start, top_bound))
 
             # Mow each segment in alternating directions
-            if mowing_direction == 1:
-                for y_start, y_end in y_segments:
-                    self.turtle.penup()
-                    self.turtle.goto(x, y_start)
-                    self.turtle.setheading(90)  # Facing up
-                    self.turtle.pendown()
-                    self.turtle.forward(y_end - y_start)
-            else:
-                for y_start, y_end in reversed(y_segments):
-                    self.turtle.penup()
-                    self.turtle.goto(x, y_end)
-                    self.turtle.setheading(270)  # Facing down
-                    self.turtle.pendown()
-                    self.turtle.forward(y_end - y_start)
+            for y_start, y_end in y_segments:
+                self.turtle.penup()
+                self.turtle.goto(x, y_start)
+                self.turtle.setheading(90 if mowing_direction == 1 else 270)  # Facing up/down
+                self.turtle.pendown()
+                self.turtle.forward(y_end - y_start)
 
             self.toggle_color()
 
             x += step_size
             mowing_direction *= -1  # Reverse the direction for the next column
-
